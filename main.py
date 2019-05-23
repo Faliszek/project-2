@@ -88,6 +88,68 @@ class CoordDescriptor:
             print("Something went wrong, try again")
 
 
+class RegularPentagon(ConvexPolygon):
+    length = FloatDescriptor(name="length")
+    number = FloatDescriptor(name="number")
+
+    def __init__(self):
+        super(RegularPentagon, self).__init__()
+        length = input(f'Insert {self.length["name"]}: ')
+        self.length = length
+
+        number = input(f'Insert {self.number["name"]}: ')
+        self.number = number
+
+    def area(self):
+        number = self.number["val"]
+        length = self.length["val"]
+        return (number * length ** 2)/(4 * math.tan(math.pi/number))
+
+    def perimeter(self):
+        return self.length["val"] * self.length["val"]
+
+    def draw(self):
+        pass
+
+
+class RegularHexagon(ConvexPolygon):
+    a = FloatDescriptor(name="side a")
+
+    def __init__(self):
+        super(RegularHexagon, self).__init__()
+        a = input(f'Insert {self.a["name"]}: ')
+        self.a = a
+
+    def area(self):
+        a = self.a
+        return ((3 * math.sqrt(3) * (a['val'] * a['val'])) / 2)
+
+    def perimeter(self):
+        return self.a['val'] * 5
+
+    def draw(self):
+        pass
+
+
+class RegularOctagon(ConvexPolygon):
+    a = FloatDescriptor(name="side a")
+
+    def __init__(self):
+        super(RegularOctagon, self).__init__()
+        a = input(f'Insert {self.a["name"]}: ')
+        self.a = a
+
+    def area(self):
+        a = self.a["val"]
+        return (2 * (1 + (math.sqrt(2))) * a * a)
+
+    def perimeter(self):
+        return self.a["val"] * 6
+
+    def draw(self):
+        pass
+
+
 class Triangle(ConvexPolygon):
     a = FloatDescriptor(name="side a")
     b = FloatDescriptor(name="side b")
@@ -132,64 +194,20 @@ class Triangle(ConvexPolygon):
     def draw(self):
         pass
 
-        # class ConvexQuadrilateral(ConvexPolygon):
 
-        # class RegularPentagon(ConvexPolygon):
-
-        # class RegularHexagonorazRegularOctagon(ConvexPolygon):
-
-        # class IsoscelesTriangle:
-
-        # class EquilateralTriangle:
-
-        # class Parallelogram:
-
-        # class Kite:
-
-        # class Rhombus:
-
-
-class RegularPentagon(ConvexPolygon):
-    length = FloatDescriptor(name="length")
-    number = FloatDescriptor(name="number")
+class IsoscelesTriangle(Triangle):
+    arm = FloatDescriptor(name="=arm")
+    bottom = FloatDescriptor(name="bottom")
 
     def __init__(self):
-        super(RegularPentagon, self).__init__()
-        length = input(f'Insert {self.length["name"]}: ')
-        self.length = length
-
-        number = input(f'Insert {self.number["name"]}: ')
-        self.number = number
-
-    def area(self):
-        number = self.number["val"]
-        length = self.length["val"]
-        return (number * length ** 2)/(4 * math.tan(math.pi/number))
-
-    def perimeter(self):
-        return self.length["val"] * self.length["val"]
-
-    def draw(self):
-        pass
+        super(IsoscelesTriangle, self).__init__()
 
 
-class RegularHexagon(ConvexPolygon):
-    a = FloatDescriptor(name="side a")
+class EquilateralTriangle(Triangle):
+    side = FloatDescriptor(name="side")
 
     def __init__(self):
-        super(RegularHexagon, self).__init__()
-        a = input(f'Insert {self.a["name"]}: ')
-        self.a = a
-
-    def area(self):
-        a = self.a
-        return ((3 * math.sqrt(3) * (a['val'] * a['val'])) / 2)
-
-    def perimeter(self):
-        return self.a['val'] * 5
-
-    def draw(self):
-        pass
+        super(EquilateralTriangle, self).__init__()
 
 
 class ConvexQuadrilateral(ConvexPolygon):
@@ -267,63 +285,38 @@ class ConvexQuadrilateral(ConvexPolygon):
         pass
 
 
-class IsoscelesTriangle(Triangle):
-    arm = FloatDescriptor(name="=arm")
-    bottom = FloatDescriptor(name="bottom")
-
-    def __init__(self):
-        super(IsoscelesTriangle, self).__init__()
-
-
-class EquilateralTriangle(Triangle):
-    side = FloatDescriptor(name="side")
-
-    def __init__(self):
-        super(EquilateralTriangle, self).__init__()
-
-
-class RegularOctagon(ConvexPolygon):
-    a = FloatDescriptor(name="side a")
-
-    def __init__(self):
-        super(RegularOctagon, self).__init__()
-        a = input(f'Insert {self.a["name"]}: ')
-        self.a = a
-
-    def area(self):
-        a = self.a["val"]
-        return (2 * (1 + (math.sqrt(2))) * a * a)
-
-    def perimeter(self):
-        return self.a["val"] * 6
-
-    def draw(self):
-        pass
-
-
 class Kite(ConvexQuadrilateral):
     def __init__(self):
+        t = self.__class__.__name__
+        if t == 'Kite':
+            print("Example values: [3,6], [6,4], [3,0], [0,4]")
+
         super(Kite, self).__init__()
-        print("Example values: [3,6], [6,4], [3,0], [0,4]")
 
 
 class Parallelogram(ConvexQuadrilateral):
     def __init__(self):
+        t = self.__class__.__name__
+        if t == 'Parallelogram':
+            print("Example values: [0,0], [2,3], [8,3], [6,0]")
+
         super(Parallelogram, self).__init__()
-        print("Example values: [0,0], [2,3], [8,3], [6,0]")
 
 
 class Rhombus(Parallelogram):
     def __init__(self):
+        t = self.__class__.__name__
+        if t == 'Rhombus':
+            print("Example values: [0,3], [2,6], [4,3], [2,0]")
+
         super(Rhombus, self).__init__()
-        print("Example values: [0,3], [2,6], [4,3], [2,0]")
 
 
 class Square(Rhombus):
 
     def __init__(self):
-        super(Square, self).__init__()
         print("Example values: [0,0], [9,0], [9,9], [0,9]")
+        super(Square, self).__init__()
 
 
 class Main:
@@ -391,6 +384,7 @@ class Main:
         except KeyError:
             print("This thing is not implemented yet, try smt else")
             self.mapNumberToPolygon()
+
 
     # def mapPolygonTo
 main = Main()
