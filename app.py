@@ -1,4 +1,3 @@
-import tkinter as tk
 
 
 class App(tk.Frame):
@@ -11,4 +10,3 @@ class App(tk.Frame):
         root.mainloop()
 
 
-App().run()

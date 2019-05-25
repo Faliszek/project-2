@@ -1,5 +1,6 @@
 import abc
-import math
+from math import tan, pi, sqrt
+import tkinter as tk
 
 
 colors = [
@@ -10,6 +11,7 @@ colors = [
 class ConvexPolygon:
     fill_colour = "black"
     outline_colour = "black"
+    scale = 1.0
 
     def __init__(self):
         print("Podaj kolor: ")
@@ -19,6 +21,10 @@ class ConvexPolygon:
         print("Kolor obramowania: ")
         val = input()
         self.outline_colour = val
+
+        print("Podaj skale: ")
+        val = input()
+        self.scale = float(val)
 
     @abc.abstractmethod
     def area(self):
@@ -81,6 +87,9 @@ class CoordDescriptor:
         self.y = y
         print(f'Updated {self.name}, y')
 
+    def toArray(self):
+        return [self.x, self.y]
+
     def checkValue(self, value):
         if isinstance(val, int):
             self.val = val
@@ -103,7 +112,7 @@ class RegularPentagon(ConvexPolygon):
     def area(self):
         number = self.number["val"]
         length = self.length["val"]
-        return (number * length ** 2)/(4 * math.tan(math.pi/number))
+        return (number * length ** 2)/(4 * tan(pi/number))
 
     def perimeter(self):
         return self.length["val"] * self.length["val"]
@@ -122,7 +131,7 @@ class RegularHexagon(ConvexPolygon):
 
     def area(self):
         a = self.a
-        return ((3 * math.sqrt(3) * (a['val'] * a['val'])) / 2)
+        return ((3 * sqrt(3) * (a['val'] * a['val'])) / 2)
 
     def perimeter(self):
         return self.a['val'] * 5
@@ -141,7 +150,7 @@ class RegularOctagon(ConvexPolygon):
 
     def area(self):
         a = self.a["val"]
-        return (2 * (1 + (math.sqrt(2))) * a * a)
+        return (2 * (1 + (sqrt(2))) * a * a)
 
     def perimeter(self):
         return self.a["val"] * 6
@@ -159,7 +168,7 @@ class Triangle(ConvexPolygon):
         super(Triangle, self).__init__()
 
         triangleT = self.__class__.__name__
-        print(triangleT)
+        print("Just remember! Length of a and b, must be higher than c!!")
         a = input(f'Insert {self.a["name"]}: ')
         self.a = a
 
@@ -183,6 +192,8 @@ class Triangle(ConvexPolygon):
         b = self.b["val"]
         c = self.c["val"]
 
+        print(a, b, c)
+
         s = (a + b + c) / 2
 
         ar = (s*(s-a)*(s-b)*(s-c)) ** 0.5
@@ -191,8 +202,42 @@ class Triangle(ConvexPolygon):
     def perimeter(self):
         return self.a["val"] + self.b["val"] + self.c["val"]
 
-    def draw(self):
-        pass
+    def draw(self, can):
+        print(can)
+
+        # from formula for path between two points, and having length,
+        # we calculate y of second point in triangle
+        # calculated value is 3 object in Quadratic_equation
+        # and we go with delta and stuff
+
+        # caclucate c
+        y2 = (self.area() * 2) / self.a["val"]
+        h = y2
+        [x1, y1] = [0, h]
+        [x2, y2] = [0, 0]
+        [x3, y3] = [self.c["val"], h]
+        wordC = (pow(self.a["val"], 2) - pow(x1, 2) -
+                 pow(y2, 2) + (2 * y2 * y1) - pow(y1, 2))
+
+        # calculate b
+        wordB = 2 * x1
+        wordA = 1
+
+        d = (wordB**2) - (4*wordA*wordC)
+        print(wordB, wordA, wordC)
+        sol1 = (-wordB-sqrt(d))/(2*wordA)
+        sol2 = (-wordB+sqrt(d))/(2*wordA)
+
+        x2 = max([sol1, sol2])
+        arr = [x1, y1, sol2, y2, x3, y3]
+
+        arr = list(map(lambda a: a * self.scale, arr))
+        # for a in arr:
+        #     a = a * self.scale
+        #     arr2.append(a)
+
+        can.create_polygon(arr, fill=self.fill_colour,
+                           outline=self.outline_colour)
 
 
 class IsoscelesTriangle(Triangle):
@@ -240,6 +285,7 @@ class ConvexQuadrilateral(ConvexPolygon):
 
         self.xs = [self.a["x"], self.b["x"], self.c["x"], self.d["x"]]
         self.ys = [self.a["y"], self.b["y"], self.c["y"], self.d["y"]]
+
         # b = input(f'Insert {self.b["name"]}: ')
         # self.b = b
 
@@ -281,8 +327,13 @@ class ConvexQuadrilateral(ConvexPolygon):
             summ += math.sqrt(math.pow(d1, 2) + math.pow(d2, 2))
         return summ
 
-    def draw(self):
-        pass
+    def draw(self, can):
+        [x1, y1] = [self.a["x"] * self.scale, self.a["y"] * self.scale]
+        [x2, y2] = [self.b["x"] * self.scale, self.b["y"] * self.scale]
+        [x3, y3] = [self.c["x"] * self.scale, self.c["y"] * self.scale]
+        [x4, y4] = [self.d["x"] * self.scale, self.d["y"] * self.scale]
+        can.create_polygon([x1, y1, x2, y2, x3, y3, x4, y4], fill=self.fill_colour,
+                           outline=self.outline_colour)
 
 
 class Kite(ConvexQuadrilateral):
@@ -319,8 +370,10 @@ class Square(Rhombus):
         super(Square, self).__init__()
 
 
-class Main:
-    def __init__(self):
+class Main(tk.Frame):
+    polygon = None
+
+    def __init__(self,  master=None):
         print("Hi there! Pick number, and hit enter")
         print("This program will calculate area of this shape")
         print("and draw it! Take your time, enjoy!")
@@ -338,6 +391,12 @@ class Main:
         print("11.Square")
 
         self.mapNumberToPolygon()
+
+        root = tk.Tk()
+        c = tk.Canvas(root, width=800, height=600, bg="white")
+        self.polygon.draw(c)
+        c.pack()
+        root.mainloop()
 
     def mapNumberToPolygon(self):
 
@@ -364,22 +423,20 @@ class Main:
             self.mapNumberToPolygon()
 
         try:
-            unit = "_"
             polygonObject = {
-                1: lambda _a: Triangle(),
-                2: lambda _a: ConvexQuadrilateral(),
-                3: lambda _a: RegularPentagon(),
-                4: lambda _a: RegularHexagon(),
-                5: lambda _a: RegularOctagon(),
-                6: lambda _a: IsoscelesTriangle(),
-                7: lambda _a: EquilateralTriangle(),
-
-                8: lambda _a: Parallelogram(),
-                9: lambda _a: Kite(),
-                10: lambda _a: Rhombus(),
-                11: lambda _a: Square(),
+                1: lambda: Triangle(),
+                2: lambda: ConvexQuadrilateral(),
+                3: lambda: RegularPentagon(),
+                4: lambda: RegularHexagon(),
+                5: lambda: RegularOctagon(),
+                6: lambda: IsoscelesTriangle(),
+                7: lambda: EquilateralTriangle(),
+                8: lambda: Parallelogram(),
+                9: lambda: Kite(),
+                10: lambda: Rhombus(),
+                11: lambda: Square(),
             }[value]
-            print(polygonObject(unit).perimeter())
+            self.polygon = polygonObject()
 
         except KeyError:
             print("This thing is not implemented yet, try smt else")
