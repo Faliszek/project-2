@@ -1,5 +1,5 @@
 import abc
-from math import tan, pi, sqrt
+from math import tan, pi, sqrt, sin, cos
 import tkinter as tk
 
 
@@ -41,9 +41,10 @@ class ConvexPolygon:
     def getColors(self):
         return (self.fill_colour, self.outline_colour)
 
-    def shift(self, xy, s):
+    def shift(self, xy, v1v2):
         [x, y] = xy
-        return [x + s, y + s]
+        [v1, v2] = v1v2
+        return [x + v1, y + v2]
 
 
 class FloatDescriptor:
@@ -103,64 +104,96 @@ class CoordDescriptor:
 
 class RegularPentagon(ConvexPolygon):
     length = FloatDescriptor(name="length")
-    number = FloatDescriptor(name="number")
+    number = 5
+    # number = FloatDescriptor(name="number")
 
     def __init__(self):
         super(RegularPentagon, self).__init__()
         length = input(f'Insert {self.length["name"]}: ')
         self.length = length
 
-        number = input(f'Insert {self.number["name"]}: ')
-        self.number = number
-
     def area(self):
-        number = self.number["val"]
-        length = self.length["val"]
-        return (number * length ** 2)/(4 * tan(pi/number))
+        number = self.number
+        return 0.25 * sqrt(number*(number+(2*sqrt(number)))) * (self.length["val"] ** 2)
 
     def perimeter(self):
-        return self.length["val"] * self.length["val"]
+        return self.number * self.length["val"]
 
-    def draw(self):
-        pass
+    def draw(self, can):
+        number = self.number
+        a = self.length["val"]
+        b = (0.5 * a) / sin(pi / number)
+        [centerX, centerY] = [400, 400]
+
+        cords = []
+        for i in range(number):
+            cords.append(centerX + b * cos((2*pi/number) * i))
+            cords.append(centerY + b * sin((2*pi/number) * i))
+
+        can.create_polygon(cords, fill=self.fill_colour,
+                           outline=self.outline_colour)
 
 
 class RegularHexagon(ConvexPolygon):
-    a = FloatDescriptor(name="side a")
+    length = FloatDescriptor(name="length")
+    number = 6
 
     def __init__(self):
         super(RegularHexagon, self).__init__()
-        a = input(f'Insert {self.a["name"]}: ')
-        self.a = a
+        length = input(f'Insert {self.length["name"]}: ')
+        self.length = length
 
     def area(self):
-        a = self.a
-        return ((3 * sqrt(3) * (a['val'] * a['val'])) / 2)
+        length = self.length
+        return ((3 * sqrt(3) * (length['val'] * length['val'])) / 2)
 
     def perimeter(self):
-        return self.a['val'] * 5
+        return self.length['val'] * self.number
 
-    def draw(self):
-        pass
+    def draw(self, can):
+        number = self.number
+        a = self.length["val"]
+        b = (0.5 * a) / sin(pi / number)
+        [centerX, centerY] = [400, 400]
+
+        cords = []
+        for i in range(number):
+            cords.append(centerX + b * cos((2*pi/number) * i))
+            cords.append(centerY + b * sin((2*pi/number) * i))
+
+        can.create_polygon(cords, fill=self.fill_colour,
+                           outline=self.outline_colour)
 
 
 class RegularOctagon(ConvexPolygon):
-    a = FloatDescriptor(name="side a")
+    length = FloatDescriptor(name="side a")
+    number = 8
 
     def __init__(self):
         super(RegularOctagon, self).__init__()
-        a = input(f'Insert {self.a["name"]}: ')
-        self.a = a
+        length = input(f'Insert {self.length["name"]}: ')
+        self.length = length
 
     def area(self):
-        a = self.a["val"]
-        return (2 * (1 + (sqrt(2))) * a * a)
+        length = self.length
+        return ((3 * sqrt(3) * (length['val'] * length['val'])) / 2)
 
     def perimeter(self):
-        return self.a["val"] * 6
+        return self.length['val'] * self.number
 
-    def draw(self):
-        pass
+    def draw(self, can):
+        number = self.number
+        a = self.length["val"]
+        b = (0.5 * a) / sin(pi / number)
+        [centerX, centerY] = [400, 400]
+
+        cords = []
+        for i in range(number):
+            cords.append(centerX + b * cos((2*pi/number) * i))
+            cords.append(centerY + b * sin((2*pi/number) * i))
+
+        can.create_polygon(cords, fill=self.fill_colour,
+                           outline=self.outline_colour)
 
 
 class Triangle(ConvexPolygon):
@@ -181,9 +214,9 @@ class Triangle(ConvexPolygon):
             self.c = a
 
         elif triangleT == "IsoscelesTriangle":
-            self.b = a
-            c = input(f'Insert {self.c["name"]}: ')
-            self.c = c
+            b = input(f'Insert {self.b["name"]}: ')
+            self.b = b
+            self.c = b
 
         else:
             b = input(f'Insert {self.b["name"]}: ')
@@ -207,8 +240,6 @@ class Triangle(ConvexPolygon):
         return self.a["val"] + self.b["val"] + self.c["val"]
 
     def draw(self, can):
-        print(can)
-
         # from formula for path between two points, and having length,
         # we calculate y of second point in triangle
         # calculated value is 3 object in Quadratic_equation
@@ -232,13 +263,16 @@ class Triangle(ConvexPolygon):
         # sol2 = (-wordB+sqrt(d))/(2*wordA)
 
         # x2 = max([sol1, sol2])
-
-        [x1, y1] = self.shift([0, 0], 0)
-        [x2, y2] = self.shift([self.a['val'], 0], 0)
-
         h = (self.area() * 2) / self.a["val"]
 
-        [x3, y3] = self.shift([sqrt(self.b['val']**2 - h**2), -h], 0)
+        v1 = (400 / self.scale) - (self.a['val'] / 2)
+        v2 = (400 / self.scale) - (h / 2)
+
+        [x1, y1] = self.shift([0, 0], [v1, v2])
+        [x2, y2] = self.shift([self.a['val'], 0], [v1, v2])
+
+        [x3, y3] = self.shift(
+            [sqrt(self.b['val']**2 - h**2), h], [v1, v2])
 
         arr = [x1, y1, x2, y2, x3, y3]
 
@@ -401,7 +435,7 @@ class Main(tk.Frame):
         self.mapNumberToPolygon()
 
         root = tk.Tk()
-        c = tk.Canvas(root, width=800, height=600, bg="white")
+        c = tk.Canvas(root, width=800, height=800, bg="white")
         self.polygon.draw(c)
         c.pack()
         root.mainloop()
@@ -445,7 +479,7 @@ class Main(tk.Frame):
                 11: lambda: Square(),
             }[value]
             self.polygon = polygonObject()
-
+            print(self.polygon.area())
         except KeyError:
             print("This thing is not implemented yet, try smt else")
             self.mapNumberToPolygon()
