@@ -41,6 +41,10 @@ class ConvexPolygon:
     def getColors(self):
         return (self.fill_colour, self.outline_colour)
 
+    def shift(self, xy, s):
+        [x, y] = xy
+        return [x + s, y + s]
+
 
 class FloatDescriptor:
 
@@ -192,7 +196,7 @@ class Triangle(ConvexPolygon):
         b = self.b["val"]
         c = self.c["val"]
 
-        print(a, b, c)
+        print("a: ", a, "b: ", b, "c: ", c)
 
         s = (a + b + c) / 2
 
@@ -211,30 +215,34 @@ class Triangle(ConvexPolygon):
         # and we go with delta and stuff
 
         # caclucate c
-        y2 = (self.area() * 2) / self.a["val"]
-        h = y2
-        [x1, y1] = [0, h]
-        [x2, y2] = [0, 0]
-        [x3, y3] = [self.c["val"], h]
-        wordC = (pow(self.a["val"], 2) - pow(x1, 2) -
-                 pow(y2, 2) + (2 * y2 * y1) - pow(y1, 2))
+        # y2 = (self.area() * 2) / self.a["val"]
+        # h = y2
+        # [x1, y1] = [0, h]
+        # [x2, y2] = [0, 0]
+        # [x3, y3] = [self.c["val"], h]
+        # wordC = (pow(self.a["val"], 2) - pow(x1, 2) -
+        #          pow(y2, 2) + (2 * y2 * y1) - pow(y1, 2))
 
-        # calculate b
-        wordB = 2 * x1
-        wordA = 1
+        # # calculate b
+        # wordB = 2 * x1
+        # wordA = 1
 
-        d = (wordB**2) - (4*wordA*wordC)
-        print(wordB, wordA, wordC)
-        sol1 = (-wordB-sqrt(d))/(2*wordA)
-        sol2 = (-wordB+sqrt(d))/(2*wordA)
+        # d = (wordB**2) - (4*wordA*wordC)
+        # sol1 = (-wordB-sqrt(d))/(2*wordA)
+        # sol2 = (-wordB+sqrt(d))/(2*wordA)
 
-        x2 = max([sol1, sol2])
-        arr = [x1, y1, sol2, y2, x3, y3]
+        # x2 = max([sol1, sol2])
+
+        [x1, y1] = self.shift([0, 0], 0)
+        [x2, y2] = self.shift([self.a['val'], 0], 0)
+
+        h = (self.area() * 2) / self.a["val"]
+
+        [x3, y3] = self.shift([sqrt(self.b['val']**2 - h**2), -h], 0)
+
+        arr = [x1, y1, x2, y2, x3, y3]
 
         arr = list(map(lambda a: a * self.scale, arr))
-        # for a in arr:
-        #     a = a * self.scale
-        #     arr2.append(a)
 
         can.create_polygon(arr, fill=self.fill_colour,
                            outline=self.outline_colour)
@@ -324,7 +332,7 @@ class ConvexQuadrilateral(ConvexPolygon):
             y2 = self.ys[_next]
             d1 = x2-x1
             d2 = y2-y1
-            summ += math.sqrt(math.pow(d1, 2) + math.pow(d2, 2))
+            summ += sqrt(pow(d1, 2) + pow(d2, 2))
         return summ
 
     def draw(self, can):
@@ -441,7 +449,6 @@ class Main(tk.Frame):
         except KeyError:
             print("This thing is not implemented yet, try smt else")
             self.mapNumberToPolygon()
-
 
     # def mapPolygonTo
 main = Main()
