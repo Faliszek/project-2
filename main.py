@@ -351,26 +351,29 @@ class ConvexQuadrilateral(ConvexPolygon):
 
     def __init__(self):
         super(ConvexQuadrilateral, self).__init__()
-        # print("Okay it will be a hell of input, we need, 4 tuples, with x, and y")
-        # print("Remeber to provide x,y in clock wise way")
-        # x = input("x: ")
-        # y = input("y: ")
-        # self.a = {"x": x, "y": y}
 
-        # x = input("x: ")
-        # y = input("y: ")
-        # self.b = {"x": x, "y": y}
+        t = self.__class__.__name__
+        if t == 'ConvexQuadrilateral':
+            print("Okay it will be a hell of input, we need, 4 tuples, with x, and y")
+            print("Remeber to provide x,y in clock wise way")
+            x = input("x: ")
+            y = input("y: ")
+            self.a = {"x": x, "y": y}
 
-        # x = input("x: ")
-        # y = input("y: ")
-        # self.c = {"x": x, "y": y}
+            x = input("x: ")
+            y = input("y: ")
+            self.b = {"x": x, "y": y}
 
-        # x = input("x: ")
-        # y = input("y: ")
-        # self.d = {"x": x, "y": y}
+            x = input("x: ")
+            y = input("y: ")
+            self.c = {"x": x, "y": y}
 
-        # self.xs = [self.a["x"], self.b["x"], self.c["x"], self.d["x"]]
-        # self.ys = [self.a["y"], self.b["y"], self.c["y"], self.d["y"]]
+            x = input("x: ")
+            y = input("y: ")
+            self.d = {"x": x, "y": y}
+
+            self.xs = [self.a["x"], self.b["x"], self.c["x"], self.d["x"]]
+            self.ys = [self.a["y"], self.b["y"], self.c["y"], self.d["y"]]
 
     def area(self):
      # Initialze area
@@ -404,11 +407,26 @@ class ConvexQuadrilateral(ConvexPolygon):
             summ += sqrt(pow(d1, 2) + pow(d2, 2))
         return summ
 
-    def draw(self, can):
+    def findVector(self):
+        # |AB|2|AB||AB|=|AC|2+|BC|2=|AC|2+|BC
         [x1, y1] = [self.a["x"] * self.scale, self.a["y"] * self.scale]
         [x2, y2] = [self.b["x"] * self.scale, self.b["y"] * self.scale]
         [x3, y3] = [self.c["x"] * self.scale, self.c["y"] * self.scale]
         [x4, y4] = [self.d["x"] * self.scale, self.d["y"] * self.scale]
+        d1 = sqrt((x1-x3)**2 + (y1-y3)**2)
+        d2 = sqrt((x2-x4)**2 + (y2-y4)**2)
+        return [400 - (d1 / 2), 400 - (d2 / 2)]
+
+    def draw(self, can):
+        v = self.findVector()
+        [x1, y1] = self.shift(
+            [self.a["x"] * self.scale, self.a["y"] * self.scale], v)
+        [x2, y2] = self.shift(
+            [self.b["x"] * self.scale, self.b["y"] * self.scale], v)
+        [x3, y3] = self.shift(
+            [self.c["x"] * self.scale, self.c["y"] * self.scale], v)
+        [x4, y4] = self.shift(
+            [self.d["x"] * self.scale, self.d["y"] * self.scale], v)
         can.create_polygon([x1, y1, x2, y2, x3, y3, x4, y4], fill=self.fill_colour,
                            outline=self.outline_colour)
 
@@ -473,6 +491,12 @@ class Kite(ConvexQuadrilateral):
         b = self.b['val']
         return a+a + b + b
 
+    def findCenter(self):
+        d1 = self.calcD1()
+        d2 = self.calcD2()
+        print("d1: ", d1, "d2: ", d2)
+        return [(d2 / 2) * self.scale, (d1 / 2) * self.scale]
+
     def draw(self, can):
         shorterD = self.calcD2() * self.scale
         longerD = self.calcD1() * self.scale
@@ -480,18 +504,19 @@ class Kite(ConvexQuadrilateral):
         a = self.a['val'] * self.scale
         b = self.b['val'] * self.scale
 
-        v = [400 - (a / 2), 400 - (b / 2)]
+        [s1, s2] = self.findCenter()
+        v = [400 - s1,  400 - s2]
         alpha = (180 - angle) / 2
 
         r = radians(alpha)
 
         smallerPartOfLongestD = (shorterD / 2) / tan(r)
 
-        [x1, y1] = self.shift([0, 0], v)
-        [x2, y2] = self.shift([(shorterD / 2) * -1, smallerPartOfLongestD], v)
-        [x3, y3] = self.shift([0, longerD], v)
+        [x1, y1] = self.shift([shorterD / 2, 0], v)
+        [x2, y2] = self.shift([0, smallerPartOfLongestD], v)
+        [x3, y3] = self.shift([shorterD / 2, longerD], v)
 
-        [x4, y4] = self.shift([(shorterD / 2), smallerPartOfLongestD], v)
+        [x4, y4] = self.shift([shorterD, smallerPartOfLongestD], v)
 
         arr = [x1, y1, x2, y2, x3, y3, x4, y4]
 
@@ -631,18 +656,12 @@ class Main(tk.Frame):
                 11: lambda: Square(),
             }[value]
             self.polygon = polygonObject()
-            print(self.polygon.area())
+            print("Area: ", self.polygon.area())
+            print("Perimeter: ", self.polygon.perimeter())
         except KeyError:
             print("This thing is not implemented yet, try smt else")
             self.mapNumberToPolygon()
 
+
     # def mapPolygonTo
 main = Main()
-
-
-# Uncomment below to take inputs from the user
-# a = float(input('Enter first side: '))
-# b = float(input('Enter second side: '))
-# c = float(input('Enter third side: '))
-
-# calculate the semi-perimeter
