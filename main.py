@@ -1,7 +1,8 @@
 import abc
-from math import tan, pi, sqrt, sin, cos, radians
 import tkinter as tk
 
+from math import tan, pi, sqrt, sin, cos, radians
+from descriptors import *
 
 colors = [
     "black", "blue", "red", "green", "white"
@@ -47,87 +48,15 @@ class ConvexPolygon:
         return [x + v1, y + v2]
 
 
-class FloatDescriptor:
-
-    def __init__(self, val=0.0, name='float value'):
-        self.val = val
-        self.name = name
-
-    def __get__(self, obj, objtype):
-        # print(f'Insert {self.name} and hit enter')
-        return {"val": self.val, "name": self.name}
-
-    def __set__(self, obj, val):
-        print(f'Updated {self.name}')
-        v = float(val)
-        self.val = v
-
-    def checkValue(self, value):
-        if isinstance(val, float):
-            self.val = val
-        else:
-            print("Something went wrong, try again")
-
-
-class AngleDescriptor:
-    val = 0.0
-
-    def __init__(self, angle=0.0, name='angle value'):
-        self.val = angle
-        self.name = name
-
-    def __get__(self, obj, objtype):
-        # print(f'Insert {self.name} and hit enter')
-        return {"val": self.val, "name": self.name}
-
-    def __set__(self, obj, val):
-        print(f'Updated {self.name}')
-        v = float(val)
-        self.val = v
-
-
-class CoordDescriptor:
-    x = 0
-    y = 0
-    name = "coord"
-
-    def __init__(self, x=0, y=0, name='coordinate value'):
-        self.x = x
-        self.y = y
-        self.name = name
-
-    def __get__(self, obj, objtype):
-        # print(f'Insert {self.name} and hit enter')
-        return {"x": self.x, "y": self.y, "name": self.name}
-
-    def __set__(self, obj, val):
-        x = int(val["x"])
-        self.x = x
-        print(f'Updated {self.name}, x')
-
-        y = int(val["y"])
-        self.y = y
-        print(f'Updated {self.name}, y')
-
-    def toArray(self):
-        return [self.x, self.y]
-
-    def checkValue(self, value):
-        if isinstance(val, int):
-            self.val = val
-        else:
-            print("Something went wrong, try again")
-
-
-class RegularPentagon(ConvexPolygon):
+class RegularPolygon(ConvexPolygon):
     length = FloatDescriptor(name="length")
-    number = 5
     # number = FloatDescriptor(name="number")
 
-    def __init__(self):
-        super(RegularPentagon, self).__init__()
+    def __init__(self, number=0):
+        super(RegularPolygon, self).__init__()
         length = input(f'Insert {self.length["name"]}: ')
         self.length = length
+        self.number = number
 
     def area(self):
         number = self.number
@@ -138,11 +67,10 @@ class RegularPentagon(ConvexPolygon):
 
     def draw(self, can):
         number = self.number
-        a = self.length["val"]
+        a = self.length["val"] * self.scale
         # beacuse we split triangle angle in two
         r = radians(360/(number * 2))
         b = a / (2 * sin(r))
-        print(b)
         [centerX, centerY] = [0, 0]
 
         cords = []
@@ -160,84 +88,49 @@ class RegularPentagon(ConvexPolygon):
                            outline=self.outline_colour)
 
 
-class RegularHexagon(ConvexPolygon):
+class RegularPentagon(RegularPolygon):
+    length = FloatDescriptor(name="length")
+    number = 5
+
+    def __init__(self):
+        super(RegularPentagon, self).__init__(number=self.number)
+
+    def area(self):
+        number = self.number
+        return 0.25 * sqrt(number*(number+(2*sqrt(number)))) * (self.length["val"] ** 2)
+
+    def draw(self, can):
+        super(RegularPentagon, self).draw(can)
+
+
+class RegularHexagon(RegularPolygon):
     length = FloatDescriptor(name="length")
     number = 6
 
     def __init__(self):
-        super(RegularHexagon, self).__init__()
-        length = input(f'Insert {self.length["name"]}: ')
-        self.length = length
+        super(RegularHexagon, self).__init__(number=self.number)
 
     def area(self):
         length = self.length
         return ((3 * sqrt(3) * (length['val'] * length['val'])) / 2)
 
-    def perimeter(self):
-        return self.length['val'] * self.number
-
     def draw(self, can):
-        number = self.number
-        a = self.length["val"]
-        # beacuse we split triangle angle in two
-        r = radians(360/(number * 2))
-        b = a / (2 * sin(r))
-        print(b)
-        [centerX, centerY] = [0, 0]
-
-        cords = []
-        for i in range(number):
-            # we get radian for whole triangle
-            r = radians(360/number)
-            x = centerX + b * cos(r * i)
-            y = centerY + b * sin(r * i)
-            [v1, v2] = [400, 400]
-            [x, y] = self.shift([x, y], [v1, v2])
-            cords.append(x)
-            cords.append(y)
-
-        can.create_polygon(cords, fill=self.fill_colour,
-                           outline=self.outline_colour)
+        super(RegularHexagon, self).draw(can)
 
 
-class RegularOctagon(ConvexPolygon):
+class RegularOctagon(RegularPolygon):
     length = FloatDescriptor(name="side a")
     number = 8
 
     def __init__(self):
-        super(RegularOctagon, self).__init__()
-        length = input(f'Insert {self.length["name"]}: ')
-        self.length = length
+        super(RegularOctagon, self).__init__(number=self.number)
 
     def area(self):
         length = self.length
         return ((3 * sqrt(3) * (length['val'] * length['val'])) / 2)
 
-    def perimeter(self):
-        return self.length['val'] * self.number
-
     def draw(self, can):
-        number = self.number
-        a = self.length["val"]
-        # beacuse we split triangle angle in two
-        r = radians(360/(number * 2))
-        b = a / (2 * sin(r))
-        print(b)
-        [centerX, centerY] = [0, 0]
-
-        cords = []
-        for i in range(number):
-            # we get radian for whole triangle
-            r = radians(360/number)
-            x = centerX + b * cos(r * i)
-            y = centerY + b * sin(r * i)
-            [v1, v2] = [400, 400]
-            [x, y] = self.shift([x, y], [v1, v2])
-            cords.append(x)
-            cords.append(y)
-
-        can.create_polygon(cords, fill=self.fill_colour,
-                           outline=self.outline_colour)
+        super(RegularOctagon, self).draw(can)
 
 
 class Triangle(ConvexPolygon):
@@ -272,8 +165,6 @@ class Triangle(ConvexPolygon):
         a = self.a["val"]
         b = self.b["val"]
         c = self.c["val"]
-
-        print("a: ", a, "b: ", b, "c: ", c)
 
         s = (a + b + c) / 2
 
@@ -656,12 +547,15 @@ class Main(tk.Frame):
                 11: lambda: Square(),
             }[value]
             self.polygon = polygonObject()
-            print("Area: ", self.polygon.area())
-            print("Perimeter: ", self.polygon.perimeter())
+            print("\n\n")
+            print("-------------------------------------\n")
+            print("Area: ", self.polygon.area(), "\n")
+            print("Perimeter: ", self.polygon.perimeter(), "\n")
+            print("-------------------------------------\n")
+
+            print("Have a good day!")
         except KeyError:
             print("This thing is not implemented yet, try smt else")
             self.mapNumberToPolygon()
 
-
-    # def mapPolygonTo
 main = Main()
